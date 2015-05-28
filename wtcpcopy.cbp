@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="wtcpcopy" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/wtcpcopy" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-x 80-172.16.164.5:8080 -s 10.2.25.81   -i \Device\NPF_{08879C4D-BA43-4498-813F-37942B989EB9}" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="src/communication" />
+					<Add directory="src/core" />
+					<Add directory="src/digest" />
+					<Add directory="src/event" />
+					<Add directory="src/tcpcopy" />
+					<Add directory="src/util" />
+					<Add directory="objs/" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/wtcpcopy" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="objs/tc_auto_config.h" />
+		<Unit filename="objs/tc_auto_headers.h" />
+		<Unit filename="objs/tc_modules.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/communication/tc_msg.h" />
+		<Unit filename="src/communication/tc_socket.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/communication/tc_socket.h" />
+		<Unit filename="src/core/netinet.h" />
+		<Unit filename="src/core/tc_alloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_alloc.h" />
+		<Unit filename="src/core/tc_array.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_array.h" />
+		<Unit filename="src/core/tc_conf_file.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_conf_file.h" />
+		<Unit filename="src/core/tc_config.h" />
+		<Unit filename="src/core/tc_hash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_hash.h" />
+		<Unit filename="src/core/tc_link_list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_link_list.h" />
+		<Unit filename="src/core/tc_log.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_log.h" />
+		<Unit filename="src/core/tc_palloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_palloc.h" />
+		<Unit filename="src/core/tc_rbtree.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_rbtree.h" />
+		<Unit filename="src/core/tc_signal.h" />
+		<Unit filename="src/core/tc_time.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/tc_time.h" />
+		<Unit filename="src/core/xcopy.h" />
+		<Unit filename="src/digest/tc_evp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/digest/tc_evp.h" />
+		<Unit filename="src/event/tc_event.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/event/tc_event.h" />
+		<Unit filename="src/event/tc_event_timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/event/tc_event_timer.h" />
+		<Unit filename="src/event/tc_select_module.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/event/tc_select_module.h" />
+		<Unit filename="src/tcpcopy/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/tcpcopy/tc_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/tcpcopy/tc_manager.h" />
+		<Unit filename="src/tcpcopy/tc_message_module.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/tcpcopy/tc_message_module.h" />
+		<Unit filename="src/tcpcopy/tc_packets_module.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/tcpcopy/tc_packets_module.h" />
+		<Unit filename="src/tcpcopy/tc_session.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/tcpcopy/tc_session.h" />
+		<Unit filename="src/tcpcopy/tcpcopy.h" />
+		<Unit filename="src/util/tc_util.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/util/tc_util.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
