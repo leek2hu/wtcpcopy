@@ -34,6 +34,7 @@ typedef uint16_t u_int16_t;
 typedef uint32_t  u_int32_t;
 typedef int socklen_t;
 
+#pragma pack (1)
 struct udphdr
 {
   u_int16_t source;
@@ -77,11 +78,11 @@ struct tcphdr
 struct iphdr
 {
 #ifdef __LITTLE_ENDIAN
-    unsigned int ihl:4;
-    unsigned int version:4;
+    u_int8_t ihl:4;
+    u_int8_t version:4;
 #else
-    unsigned int version:4;
-    unsigned int ihl:4;
+    u_int8_t version:4;
+    u_int8_t ihl:4;
 #endif
     u_int8_t tos;
     u_int16_t tot_len;
@@ -94,5 +95,6 @@ struct iphdr
     u_int32_t daddr;
     /*The options start here. */
 };
+#pragma pack ()
 
 #endif

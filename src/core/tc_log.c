@@ -142,7 +142,7 @@ tc_log_info(int level, int err, const char *fmt, ...)
 
     write(log_fd, buffer, p - buffer);
 
-    if (level <= LOG_INFO) {
+    if (level <= LOG_NOTICE) {
         char info[LOG_MAX_LEN];
         snprintf(info, "%s", buffer, p - buffer);
         info[p - buffer] = '\0';

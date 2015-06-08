@@ -3,7 +3,7 @@
 #include <tcpcopy.h>
 
 /* check resource usage, such as memory usage and cpu usage */
-#if (MINGW32)
+#if (TC_WINDOWS)
 static void
 check_resource_usage(tc_event_timer_t *evt){
     return;
@@ -211,6 +211,7 @@ tcp_copy_init(tc_event_loop_t *ev_lp)
         return TC_ERR;
     }
 
+    /* connect to intercept server */
     if (connect_to_server(ev_lp) == TC_ERR) {
         return TC_ERR;
     }
@@ -220,6 +221,7 @@ tcp_copy_init(tc_event_loop_t *ev_lp)
         return TC_ERR;
     }
 #else
+    /* initialize raw in socket(pcap) and out socket(pcap)*/
     if (tc_packets_init(ev_lp) == TC_ERR) {
         return TC_ERR;
     }

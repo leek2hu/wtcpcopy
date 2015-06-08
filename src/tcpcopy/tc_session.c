@@ -17,9 +17,9 @@ static inline void fill_pro_common_header(tc_iph_t *, tc_tcph_t *);
 static inline int overwhelm(tc_sess_t *, const char *, int, int);
 static inline tc_sess_t *sess_add(uint64_t, tc_iph_t *, tc_tcph_t *);
 
-    
-static void 
-reconstruct_sess(tc_sess_t *s) 
+
+static void
+reconstruct_sess(tc_sess_t *s)
 {
     snd_rst(s);
 
@@ -65,7 +65,7 @@ sess_post_disp(tc_sess_t *s,  bool complete)
             } else {
                 if (!before(s->max_con_seq, s->rep_ack_seq_bf_fin)) {
                     tc_log_debug3(LOG_INFO, 0, "cont unsend:%u,ack:%u,max:%u",
-                            ntohs(s->src_port), s->rep_ack_seq_bf_fin, 
+                            ntohs(s->src_port), s->rep_ack_seq_bf_fin,
                             s->max_con_seq);
                 }
             }
@@ -89,7 +89,7 @@ sess_post_disp(tc_sess_t *s,  bool complete)
             tc_event_update_timer(s->gc_ev, TCP_MS_TIMEOUT);
             return;
         }
-    } 
+    }
 
     if (!hash_del(sess_table, s->pool, s->hash_key)) {
         tc_log_info(LOG_ERR, 0, "wrong del:%u", ntohs(s->src_port));
@@ -113,7 +113,7 @@ sess_post_disp(tc_sess_t *s,  bool complete)
 
 #if (TC_DETECT_MEMORY)
     if (s->sm.active_timer_cnt != 0) {
-        tc_log_info(LOG_ERR, 0, "possible timer memory leak:%d, %u", 
+        tc_log_info(LOG_ERR, 0, "possible timer memory leak:%d, %u",
                 s->sm.active_timer_cnt, ntohs(s->src_port));
     }
 #endif
@@ -146,9 +146,9 @@ snd_rst(tc_sess_t *s)
     tcp->rst     = 1;
     tcp->ack     = 1;
     if (!s->sm.src_closed) {
-        tcp->seq = htonl(s->target_nxt_seq); 
+        tcp->seq = htonl(s->target_nxt_seq);
     } else {
-        tcp->seq = htonl(s->target_nxt_seq - 1); 
+        tcp->seq = htonl(s->target_nxt_seq - 1);
     }
 
     s->frame = frame;
@@ -157,16 +157,16 @@ snd_rst(tc_sess_t *s)
 }
 
 
-static inline void 
+static inline void
 fill_pro_common_header(tc_iph_t *ip, tc_tcph_t *tcp)
 {
     /* IPv4 */
     ip->version  = 4;
     ip->ihl      = IPH_MIN_LEN / 4;
-    ip->frag_off = htons(IP_DF); 
-    ip->ttl      = 64; 
+    ip->frag_off = htons(IP_DF);
+    ip->ttl      = 64;
     ip->protocol = IPPROTO_TCP;
-    tcp->window  = 65535; 
+    tcp->window  = 65535;
 }
 
 
@@ -187,7 +187,7 @@ tc_init_sess_table(void)
 void
 tc_dest_sess_table(void)
 {
-    size_t       i;           
+    size_t       i;
     tc_sess_t   *s;
     hash_node   *hn;
     link_list   *list;
@@ -198,7 +198,7 @@ tc_dest_sess_table(void)
                 sess_table->size, sess_table->total);
         for (i = 0; i < sess_table->size; i++) {
             list = sess_table->lists[i];
-            ln   = link_list_first(list);   
+            ln   = link_list_first(list);
             while (ln) {
                 tln = link_list_get_next(list, ln);
                 hn = (hash_node *) ln->data;
@@ -261,7 +261,7 @@ sess_create(tc_iph_t *ip, tc_tcph_t *tcp)
         s->online_addr    = ip->daddr;
         s->src_port       = tcp->source;
         s->online_port    = tcp->dest;
-        test = get_test_pair(&(clt_settings.transfer), s->online_addr, 
+        test = get_test_pair(&(clt_settings.transfer), s->online_addr,
                 s->online_port);
         s->dst_addr       = test->target_ip;
         s->dst_port       = test->target_port;
@@ -287,7 +287,7 @@ sess_create(tc_iph_t *ip, tc_tcph_t *tcp)
 #if (TC_DETECT_MEMORY)
         s->sm.active_timer_cnt++;
 #endif
-        s->gc_ev = tc_event_add_timer(s->pool, SESS_EST_MS_TIMEOUT, s, 
+        s->gc_ev = tc_event_add_timer(s->pool, SESS_EST_MS_TIMEOUT, s,
                 sess_timeout);
 #if (TC_PLUGIN)
         if (clt_settings.plugin && clt_settings.plugin->proc_when_sess_created)
@@ -305,11 +305,11 @@ static int
 sess_obso(tc_sess_t *s, time_t cur, time_t thrsh_time, time_t thrsh_keep_time)
 {
     int threshold, diff;
-    
+
     if (s->sm.pack_lost) {
         diff = cur - s->pack_lost_time;
         if (diff > PACK_LOSS_TIMEOUT) {
-            tc_log_info(LOG_NOTICE, 0, "wait for prev packet timeout,p:%u", 
+            tc_log_info(LOG_NOTICE, 0, "wait for prev packet timeout,p:%u",
                         ntohs(s->src_port));
             tc_stat.obs_cnt++;
             return OBSOLETE;
@@ -323,7 +323,7 @@ sess_obso(tc_sess_t *s, time_t cur, time_t thrsh_time, time_t thrsh_keep_time)
             if (s->sm.state >= SND_REQ) {
                 if (s->rep_rcv_con_time < thrsh_keep_time) {
                     tc_stat.obs_cnt++;
-                    tc_log_debug1(LOG_DEBUG, 0, "keepalive timeout ,p:%u", 
+                    tc_log_debug1(LOG_DEBUG, 0, "keepalive timeout ,p:%u",
                             ntohs(s->src_port));
                     return OBSOLETE;
                 } else {
@@ -333,7 +333,7 @@ sess_obso(tc_sess_t *s, time_t cur, time_t thrsh_time, time_t thrsh_keep_time)
                 }
             } else {
                 tc_stat.obs_cnt++;
-                tc_log_debug1(LOG_INFO, 0, "wait timeout,p:%u", 
+                tc_log_debug1(LOG_INFO, 0, "wait timeout,p:%u",
                         ntohs(s->src_port));
                 return OBSOLETE;
             }
@@ -364,14 +364,14 @@ sess_obso(tc_sess_t *s, time_t cur, time_t thrsh_time, time_t thrsh_keep_time)
 }
 
 
-static inline int 
+static inline int
 overwhelm(tc_sess_t *s, const char *m, int max_hold_packs, int size)
 {
     if (size < max_hold_packs && size < MAX_SLIDE_WIN_THRESH) {
         return NOT_YET_OBSOLETE;
     } else {
         tc_stat.obs_cnt++;
-        tc_log_info(LOG_WARN, 0, "%s:too many packs:%u,p:%u", m, 
+        tc_log_info(LOG_WARN, 0, "%s:too many packs:%u,p:%u", m,
                 size, ntohs(s->src_port));
         return OBSOLETE;
     }
@@ -398,7 +398,7 @@ sess_timeout(tc_event_timer_t *ev)
             return;
         }
 
-        tc_log_debug2(LOG_INFO, 0, "sess key:%llu, check timeout:%u", s->hash_key, 
+        tc_log_debug2(LOG_INFO, 0, "sess key:%llu, check timeout:%u", s->hash_key,
                 ntohs(s->src_port));
         now = tc_time();
         thrsh_time = now - clt_settings.sess_timeout;
@@ -410,7 +410,7 @@ sess_timeout(tc_event_timer_t *ev)
         } else {
             result = OBSOLETE;
             s->rtt = 1;
-            tc_log_debug2(LOG_INFO, 0, "est timeout, state:%u, p:%u", 
+            tc_log_debug2(LOG_INFO, 0, "est timeout, state:%u, p:%u",
                     s->sm.state, ntohs(s->src_port));
         }
 
@@ -521,7 +521,7 @@ send_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp, bool client)
             s->sm.set_rto = 1;
             s->sm.snd_after_set_rto = 0;
         }
-    } 
+    }
 
     if (s->sm.timestamp) {
         update_timestamp(s, tcp);
@@ -589,7 +589,7 @@ send_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp, bool client)
 }
 
 
-static void 
+static void
 update_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
 {
     uint32_t       ts;
@@ -597,7 +597,7 @@ update_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
     unsigned char *p, *end;
 
     p = ((unsigned char *) tcp) + TCPH_MIN_LEN;
-    end =  ((unsigned char *) tcp) + (tcp->doff << 2);  
+    end =  ((unsigned char *) tcp) + (tcp->doff << 2);
     while (p < end) {
         opt = p[0];
         switch (opt) {
@@ -608,7 +608,7 @@ update_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
                 opt_len = p[1];
                 if ((p + opt_len) <= end) {
                     ts = htonl(s->ts_ec_r);
-                    tc_log_debug2(LOG_DEBUG, 0, "set ts reply:%u,p:%u", 
+                    tc_log_debug2(LOG_DEBUG, 0, "set ts reply:%u,p:%u",
                             s->ts_ec_r, ntohs(s->src_port));
                     bcopy((void *) &ts, (void *) (p + 6), sizeof(ts));
                     ts = EXTRACT_32BITS(p + 2);
@@ -623,7 +623,7 @@ update_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
                 }
                 return;
             case TCPOPT_NOP:
-                p = p + 1; 
+                p = p + 1;
                 break;
             case TCPOPT_EOL:
                 return;
@@ -638,16 +638,16 @@ update_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
                 }
                 p += opt_len;
                 break;
-        }    
+        }
     }
 }
 
 
-static inline void 
+static inline void
 fill_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
 {
     uint32_t       timestamp;
-    unsigned char *opt, *p; 
+    unsigned char *opt, *p;
 
     p   = (unsigned char *) tcp;
     opt = p + sizeof(tc_tcph_t);
@@ -659,12 +659,12 @@ fill_timestamp(tc_sess_t *s, tc_tcph_t *tcp)
     bcopy((void *) &timestamp, (void *) (opt + 4), sizeof(timestamp));
     timestamp = htonl(s->ts_ec_r);
     bcopy((void *) &timestamp, (void *) (opt + 8), sizeof(timestamp));
-    tc_log_debug3(LOG_DEBUG, 0, "fill ts:%u,%u,p:%u", 
+    tc_log_debug3(LOG_DEBUG, 0, "fill ts:%u,%u,p:%u",
             s->ts_value, s->ts_ec_r, ntohs(s->src_port));
 }
 
 
-static void 
+static void
 send_faked_ack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp, bool active)
 {
     tc_iph_t       *f_ip;
@@ -703,7 +703,7 @@ send_faked_ack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp, bool active)
 }
 
 
-static void 
+static void
 send_faked_rst(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 {
     tc_iph_t      *f_ip;
@@ -721,12 +721,12 @@ send_faked_rst(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
     f_ip->tot_len  = htons(FMIN_IP_LEN);
     f_ip->id       = htons(++s->req_ip_id);
     f_ip->saddr    = ip->daddr;
-    f_tcp->doff    = TCPH_DOFF_MIN_VALUE; 
+    f_tcp->doff    = TCPH_DOFF_MIN_VALUE;
     f_tcp->source  = tcp->dest;
     f_tcp->rst     = 1;
     f_tcp->ack     = 1;
 
-    if (s->cur_pack.cont_len == 0) {   
+    if (s->cur_pack.cont_len == 0) {
         s->target_ack_seq = tcp->seq;
     } else {
         s->target_ack_seq = htonl(ntohl(tcp->seq) + s->cur_pack.cont_len);
@@ -829,8 +829,8 @@ send_faked_syn(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 static void
 fake_syn(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 {
-    tc_log_debug1(LOG_DEBUG, 0, "fake syn:%u", ntohs(s->src_port)); 
-        
+    tc_log_debug1(LOG_DEBUG, 0, "fake syn:%u", ntohs(s->src_port));
+
 #if (!TC_SINGLE)
     if (!send_router_info(s, CLIENT_ADD)) {
         return;
@@ -850,7 +850,7 @@ fake_syn(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 }
 
 
-static bool 
+static bool
 retrans_pack(tc_sess_t *s, uint32_t expected_seq)
 {
     bool            find_and_retransmit;
@@ -867,7 +867,7 @@ retrans_pack(tc_sess_t *s, uint32_t expected_seq)
 
     find_and_retransmit = false;
     list = s->slide_win_packs;
-    ln = link_list_first(list); 
+    ln = link_list_first(list);
 
     while (ln) {
 
@@ -875,7 +875,7 @@ retrans_pack(tc_sess_t *s, uint32_t expected_seq)
         ip        = (tc_iph_t *) (s->frame + ETHERNET_HDR_LEN);
         size_ip   = ip->ihl << 2;
         tcp       = (tc_tcph_t *) ((char *) ip + size_ip);
-        cur_seq   = ntohl(tcp->seq);  
+        cur_seq   = ntohl(tcp->seq);
         cont_len  = TCP_PAYLOAD_LENGTH(ip, tcp);
 
         if (cont_len > 0) {
@@ -890,7 +890,7 @@ retrans_pack(tc_sess_t *s, uint32_t expected_seq)
                                 ntohs(s->src_port));
                     }
                 } else {
-                    tc_log_debug1(LOG_NOTICE, 0, "no retrans pack:%u", 
+                    tc_log_debug1(LOG_NOTICE, 0, "no retrans pack:%u",
                             ntohs(s->src_port));
                     break;
                 }
@@ -898,7 +898,7 @@ retrans_pack(tc_sess_t *s, uint32_t expected_seq)
         }
 
         if (find_and_retransmit) {
-            tc_log_debug2(LOG_INFO, 0, "retransmit, len:%u,p:%u", cont_len, 
+            tc_log_debug2(LOG_INFO, 0, "retransmit, len:%u,p:%u", cont_len,
                     ntohs(s->src_port));
             retrans_ip_pack(s, ip, tcp);
             s->sm.rep_dup_ack_cnt = 0;
@@ -918,7 +918,7 @@ retrans_pack(tc_sess_t *s, uint32_t expected_seq)
 }
 
 
-static void 
+static void
 retrieve_options(tc_sess_t *s, int direction, tc_tcph_t *tcp)
 {
     uint32_t       ts_value;
@@ -926,12 +926,12 @@ retrieve_options(tc_sess_t *s, int direction, tc_tcph_t *tcp)
     unsigned char *p, *end;
 
     p = ((unsigned char *) tcp) + TCPH_MIN_LEN;
-    end =  ((unsigned char *) tcp) + (tcp->doff << 2);  
+    end =  ((unsigned char *) tcp) + (tcp->doff << 2);
     while (p < end) {
         opt = p[0];
         switch (opt) {
             case TCPOPT_NOP:
-                p = p + 1; 
+                p = p + 1;
                 break;
             case TCPOPT_WSCALE:
                 if ((p + 1) >= end) {
@@ -979,18 +979,18 @@ retrieve_options(tc_sess_t *s, int direction, tc_tcph_t *tcp)
                 }
                 p += opt_len;
                 break;
-        }    
+        }
     }
 }
 
 
-static void 
+static void
 send_faked_third_handshake(tc_sess_t *s, tc_tcph_t *tcp)
 {
     tc_iph_t       *f_ip;
     tc_tcph_t      *f_tcp;
     unsigned char  *p, frame[FFRAME_LEN];
- 
+
     tc_memzero(frame, FFRAME_LEN);
     p     = frame + ETHERNET_HDR_LEN;
     f_ip  = (tc_iph_t *) p;
@@ -1008,7 +1008,7 @@ send_faked_third_handshake(tc_sess_t *s, tc_tcph_t *tcp)
 
     f_ip->id       = htons(++s->req_ip_id);
     f_ip->saddr    = s->src_addr;
-    f_ip->daddr    = s->online_addr; 
+    f_ip->daddr    = s->online_addr;
     f_tcp->source  = tcp->dest;
     f_tcp->dest    = s->online_port;
     f_tcp->ack     = 1;
@@ -1059,7 +1059,7 @@ tc_delay_ack(tc_sess_t *s)
 }
 
 
-static void 
+static void
 send_faked_ack_from_timer(tc_sess_t *s)
 {
     tc_iph_t      *ip;
@@ -1095,7 +1095,7 @@ send_faked_ack_from_timer(tc_sess_t *s)
 
 
 static inline void
-shrink_rtt(tc_sess_t *s) 
+shrink_rtt(tc_sess_t *s)
 {
     if (!s->sm.internal_usage) {
         s->rtt = s->rtt >> 1;
@@ -1105,7 +1105,7 @@ shrink_rtt(tc_sess_t *s)
 }
 
 
-static void 
+static void
 tc_lantency_ctl(tc_event_timer_t *ev)
 {
     tc_sess_t *s = ev->data;
@@ -1116,7 +1116,7 @@ tc_lantency_ctl(tc_event_timer_t *ev)
             if (s->slide_win_packs->size > SND_TOO_SLOW_THRESH) {
                 if (!s->sm.internal_usage) {
                     shrink_rtt(s);
-                } 
+                }
             }
         } else if (s->sm.timer_type == TYPE_RTO) {
             if (s->sm.snd_after_set_rto) {
@@ -1175,7 +1175,7 @@ update_retrans_packs(tc_sess_t *s)
     unsigned char   *frame;
 
     list = s->slide_win_packs;
-    ln = link_list_first(list); 
+    ln = link_list_first(list);
 
     while (ln) {
 
@@ -1183,7 +1183,7 @@ update_retrans_packs(tc_sess_t *s)
         ip      = (tc_iph_t *) (frame + ETHERNET_HDR_LEN);
         size_ip = ip->ihl << 2;
         tcp     = (tc_tcph_t *) ((char *) ip + size_ip);
-        cur_seq = ntohl(tcp->seq);  
+        cur_seq = ntohl(tcp->seq);
 
         if (before(cur_seq, s->rep_ack_seq)) {
 
@@ -1216,7 +1216,7 @@ remove_conflict_packs(tc_sess_t *s)
     unsigned char   *frame;
 
     list = s->slide_win_packs;
-    ln = link_list_tail(list); 
+    ln = link_list_tail(list);
 
     while (ln) {
 
@@ -1224,7 +1224,7 @@ remove_conflict_packs(tc_sess_t *s)
         ip      = (tc_iph_t *) (frame + ETHERNET_HDR_LEN);
         size_ip = ip->ihl << 2;
         tcp     = (tc_tcph_t *) ((char *) ip + size_ip);
-        cur_seq = ntohl(tcp->seq);  
+        cur_seq = ntohl(tcp->seq);
 
         if (!before(cur_seq, s->req_hop_seq)) {
 
@@ -1268,7 +1268,7 @@ check_bak_ack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
                 send_faked_rst(s, ip, tcp);
             }
             return PACK_STOP;
-        } 
+        }
 
         slide_win_empty = false;
 
@@ -1314,7 +1314,7 @@ check_bak_ack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 }
 
 
-static inline void 
+static inline void
 check_pack_full(tc_sess_t *s, tc_iph_t *ip)
 {
     int      index, offset, bit_value, value;
@@ -1390,8 +1390,8 @@ proc_bak_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
                 tc_stat.retrans_succ_cnt++;
                 s->sm.already_retrans = 0;
             }
-            if (s->cur_pack.seq != s->rep_seq || 
-                    s->cur_pack.ack_seq != s->rep_ack_seq) 
+            if (s->cur_pack.seq != s->rep_seq ||
+                    s->cur_pack.ack_seq != s->rep_ack_seq)
             {
                 s->sm.rep_dup_ack_cnt = 0;
             }
@@ -1403,7 +1403,7 @@ proc_bak_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
             if (after(cur_target_ack_seq, last_target_ack_seq) || tcp->fin) {
                 s->target_ack_seq = htonl(cur_target_ack_seq);
             } else {
-                tc_log_debug1(LOG_NOTICE, 0, "retrans from server:%u", 
+                tc_log_debug1(LOG_NOTICE, 0, "retrans from server:%u",
                         ntohs(s->src_port));
                 shrink_rtt(s);
             }
@@ -1448,7 +1448,7 @@ proc_bak_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
                 check_pack_full(s, ip);
 
                 if (s->sm.internal_usage && before(s->req_con_snd_seq,
-                            s->max_con_seq)) 
+                            s->max_con_seq))
                 {
                     s->sm.candidate_rep_wait = 0;
                     proc_clt_pack_from_buffer(s);
@@ -1480,7 +1480,7 @@ proc_bak_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
             if (after(s->max_con_seq, s->req_con_snd_seq)) {
                 reconstruct_sess(s);
                 return;
-            } 
+            }
         }
         s->sm.sess_over = 1;
     }
@@ -1505,7 +1505,7 @@ proc_bak_syn(tc_sess_t *s, tc_tcph_t *tcp)
     if (size_tcp > TCPH_MIN_LEN) {
         retrieve_options(s, TC_BAK, tcp);
         if (s->wscale > 0) {
-            tc_log_debug2(LOG_DEBUG, 0, "wscale:%u, p:%u", 
+            tc_log_debug2(LOG_DEBUG, 0, "wscale:%u, p:%u",
                     s->wscale, ntohs(s->src_port));
         }
     }
@@ -1545,7 +1545,7 @@ proc_bak_fin(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
             if (after(s->max_con_seq, s->req_con_snd_seq)) {
                 reconstruct_sess(s);
                 return;
-            } 
+            }
         }
 
         proc_clt_pack_from_buffer(s);
@@ -1620,7 +1620,7 @@ tc_proc_outgress(unsigned char *pack)
 
 
 static int
-proc_clt_rst(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)  
+proc_clt_rst(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 {
     if (s->sm.candidate_rep_wait) {
         return PACK_STOP;
@@ -1639,8 +1639,8 @@ proc_clt_rst(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 }
 
 
-static void 
-calculate_rtt(tc_sess_t *s) 
+static void
+calculate_rtt(tc_sess_t *s)
 {
     if (s->sm.rtt_cal == RTT_INIT) {
         if (s->sm.state < SYN_SENT) {
@@ -1680,7 +1680,7 @@ calculate_rtt(tc_sess_t *s)
 
 
 static void
-proc_clt_syn(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)  
+proc_clt_syn(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 {
     if (clt_settings.default_rtt == 0) {
         s->sm.rtt_cal = RTT_INIT;
@@ -1694,7 +1694,7 @@ proc_clt_syn(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 
 
 static int
-proc_clt_fin(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)  
+proc_clt_fin(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 {
     tc_log_debug1(LOG_DEBUG, 0, "recv fin from clt:%u", ntohs(s->src_port));
 
@@ -1703,7 +1703,7 @@ proc_clt_fin(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
             if (s->sm.candidate_rep_wait) {
                 if (s->cur_pack.ack_seq == s->req_ack_snd_seq) {
                     s->sm.delay_snd = 1;
-                    utimer_disp(s, s->rtt, TYPE_DELAY_ACK); 
+                    utimer_disp(s, s->rtt, TYPE_DELAY_ACK);
                     return PACK_STOP;
                 }
                 if (s->rep_ack_seq == s->cur_pack.seq) {
@@ -1729,7 +1729,7 @@ proc_clt_fin(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 }
 
 
-static inline int 
+static inline int
 continue_diag(tc_sess_t *s)
 {
     if (s->req_con_ack_seq != s->req_con_cur_ack_seq) {
@@ -1752,16 +1752,16 @@ is_wait_greet(tc_sess_t *s)
     if (s->sm.need_rep_greet) {
         return true;
     }
-    
+
     if (s->sm.req_ack_snd) {
 
-        if (after(s->cur_pack.ack_seq, s->req_ack_snd_seq) && 
-                s->cur_pack.seq == s->req_exp_seq) 
+        if (after(s->cur_pack.ack_seq, s->req_ack_snd_seq) &&
+                s->cur_pack.seq == s->req_exp_seq)
         {
             s->sm.need_rep_greet = 1;
             if (!s->sm.rcv_rep_greet) {
-                tc_log_debug3(LOG_INFO, 0, "ack:%u, last ack:%u, wait:%u", 
-                        s->cur_pack.ack_seq, s->req_ack_snd_seq, 
+                tc_log_debug3(LOG_INFO, 0, "ack:%u, last ack:%u, wait:%u",
+                        s->cur_pack.ack_seq, s->req_ack_snd_seq,
                         ntohs(s->src_port));
                 return true;
             } else {
@@ -1904,7 +1904,7 @@ proc_clt_after_filter(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 
 /*
  * processing client packets
- * 
+ *
  */
 static int
 proc_clt_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
@@ -2002,7 +2002,7 @@ proc_clt_pack(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 
 
 uint32_t
-get_tf_ip(uint16_t key) 
+get_tf_ip(uint16_t key)
 {
     uint16_t cnt;
 
@@ -2024,7 +2024,7 @@ bool
 tc_check_ingress_pack_needed(tc_iph_t *ip)
 {
     bool        is_needed = false;
-    uint16_t    size_ip, size_tcp, tot_len, cont_len, hlen, 
+    uint16_t    size_ip, size_tcp, tot_len, cont_len, hlen,
                 key, frag_off, tf_key;
     uint64_t    sess_key;
     tc_tcph_t  *tcp;
@@ -2049,6 +2049,7 @@ tc_check_ingress_pack_needed(tc_iph_t *ip)
 
     tot_len  = ntohs(ip->tot_len);
     tcp      = (tc_tcph_t *) ((char *) ip + size_ip);
+
     size_tcp = tcp->doff << 2;
     if (size_tcp < TCPH_MIN_LEN) {
         tc_log_info(LOG_INFO, 0, "Invalid TCP header: %d bytes,pack len:%d",
@@ -2057,8 +2058,8 @@ tc_check_ingress_pack_needed(tc_iph_t *ip)
     }
 
     /* filter the packets we do care about */
-    if (TC_CLT == check_pack_src(&(clt_settings.transfer), ip->daddr, 
-                tcp->dest, CHECK_DEST)) 
+    if (TC_CLT == check_pack_src(&(clt_settings.transfer), ip->daddr,
+                tcp->dest, CHECK_DEST))
     {
         if (!clt_settings.target_localhost) {
             if (ip->saddr == LOCALHOST) {
@@ -2123,7 +2124,7 @@ tc_check_ingress_pack_needed(tc_iph_t *ip)
         } else {
             tc_log_info(LOG_INFO, 0, "bad tot:%d, hlen:%d", tot_len, hlen);
         }
-    } 
+    }
 
     return is_needed;
 }
@@ -2136,7 +2137,7 @@ tc_output_stat(void)
 
     if (tc_stat.start_pt != 0) {
         tc_log_info(LOG_NOTICE, 0, "active:%u,rel:%llu,obs del:%llu,tw:%llu",
-                sess_table->total, tc_stat.leave_cnt, tc_stat.obs_cnt, 
+                sess_table->total, tc_stat.leave_cnt, tc_stat.obs_cnt,
                 tc_stat.time_wait_cnt);
         tc_log_info(LOG_NOTICE, 0, "conns:%llu,resp:%llu,c-resp:%llu",
                 tc_stat.conn_cnt, tc_stat.resp_cnt, tc_stat.resp_cont_cnt);
@@ -2150,10 +2151,10 @@ tc_output_stat(void)
         tc_log_info(LOG_NOTICE, 0, "reconnect:%llu,for no syn:%llu",
                 tc_stat.recon_for_closed_cnt, tc_stat.recon_for_no_syn_cnt);
         tc_log_info(LOG_NOTICE, 0, "retransmit:%llu", tc_stat.retrans_cnt);
-        tc_log_info(LOG_NOTICE, 0, "recv packs after retransmission:%llu", 
+        tc_log_info(LOG_NOTICE, 0, "recv packs after retransmission:%llu",
                 tc_stat.retrans_succ_cnt);
         tc_log_info(LOG_NOTICE, 0, "syn cnt:%llu,all clt:%llu,clt cont:%llu",
-                tc_stat.clt_syn_cnt, tc_stat.clt_packs_cnt, 
+                tc_stat.clt_syn_cnt, tc_stat.clt_packs_cnt,
                 tc_stat.clt_cont_cnt);
         tc_log_info(LOG_NOTICE, 0, "total cont retransmit:%llu, frag:%llu",
                 tc_stat.clt_con_retrans_cnt, tc_stat.frag_cnt);
@@ -2164,12 +2165,12 @@ tc_output_stat(void)
             if (sess_table->total > 0) {
                 ratio = 100 * tc_stat.conn_cnt / sess_table->total;
                 if (ratio < 80) {
-                    tc_log_info(LOG_WARN, 0, 
+                    tc_log_info(LOG_WARN, 0,
                             "many connections can't be established");
                 }
             }
         }
-    } 
+    }
 }
 
 
@@ -2181,7 +2182,7 @@ tc_interval_disp(tc_event_timer_t *ev)
 }
 
 
-void 
+void
 tc_save_pack(tc_sess_t *s, link_list *list, tc_iph_t *ip, tc_tcph_t *tcp)
 {
     unsigned char  *pkt = (unsigned char *) cp_fr_ip_pack(s->pool, ip);
@@ -2192,12 +2193,12 @@ tc_save_pack(tc_sess_t *s, link_list *list, tc_iph_t *ip, tc_tcph_t *tcp)
         link_list_append_by_order(list, ln);
     }
 
-    tc_log_debug4(LOG_INFO, 0, "ln:%llu, pkt:%llu, save:%u,p:%u", ln, pkt, 
+    tc_log_debug4(LOG_INFO, 0, "ln:%llu, pkt:%llu, save:%u,p:%u", ln, pkt,
             ln->key, ntohs(s->src_port));
 }
 
 
-static void 
+static void
 proc_clt_pack_directly(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 {
     int      diff;
@@ -2239,7 +2240,7 @@ proc_clt_pack_directly(tc_sess_t *s, tc_iph_t *ip, tc_tcph_t *tcp)
 }
 
 
-static bool 
+static bool
 proc_clt_pack_from_buffer(tc_sess_t *s)
 {
     int           status;
@@ -2249,13 +2250,13 @@ proc_clt_pack_from_buffer(tc_sess_t *s)
     tc_tcph_t    *tcp;
     p_link_node   ln;
 
-    tc_log_debug2(LOG_INFO, 0, "slide_win_packs size:%u, p:%u", 
+    tc_log_debug2(LOG_INFO, 0, "slide_win_packs size:%u, p:%u",
             s->slide_win_packs->size, ntohs(s->src_port));
 
     if (s->prev_snd_node != NULL) {
         ln = link_list_get_next(s->slide_win_packs, s->prev_snd_node);
     } else {
-        ln = link_list_first(s->slide_win_packs); 
+        ln = link_list_first(s->slide_win_packs);
     }
 
     while (ln ) {
@@ -2355,7 +2356,7 @@ tc_proc_ingress(tc_iph_t *ip, tc_tcph_t *tcp)
                 rtt = 1;
                 if (larger_seq_detected) {
                     rtt = s->rtt;
-                    tc_log_debug1(LOG_INFO, 0, "del prev sess:%u", 
+                    tc_log_debug1(LOG_INFO, 0, "del prev sess:%u",
                             ntohs(s->src_port));
                     sess_post_disp(s, true);
                 }
@@ -2380,7 +2381,7 @@ tc_proc_ingress(tc_iph_t *ip, tc_tcph_t *tcp)
                 }
                 return false;
             }
-        } 
+        }
 
         s = sess_add(key, ip, tcp);
         if (s == NULL) {
@@ -2411,7 +2412,7 @@ sess_add(uint64_t key, tc_iph_t *ip, tc_tcph_t *tcp)
         if (!hash_add(sess_table, s->pool, key, s)) {
             tc_log_info(LOG_ERR, 0, "session item already exist");
         }
-        tc_log_debug2(LOG_NOTICE, 0, "session key:%llu, p:%u", 
+        tc_log_debug2(LOG_NOTICE, 0, "session key:%llu, p:%u",
                 s->hash_key, ntohs(s->src_port));
     }
 

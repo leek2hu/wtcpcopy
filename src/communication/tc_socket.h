@@ -8,10 +8,15 @@
 #define tc_socket_close(fd) close(fd)
 
 #if (TC_PCAP)
-int tc_pcap_socket_in_init(pcap_t **pd, char *device, 
+int tc_pcap_socket_in_init(pcap_t **pd, char *device,
         int snap_len, int buf_size, char *pcap_filter);
 #endif
+
+#if (TC_WINDOWS)
+int tc_raw_socket_in_init(int type, uint32_t online_ip);
+#else
 int tc_raw_socket_in_init(int type);
+#endif
 
 int tc_raw_socket_out_init(void);
 int tc_raw_socket_snd(int fd, void *buf, size_t len, uint32_t ip);

@@ -133,7 +133,13 @@ tc_packets_init(tc_event_loop_t *event_loop)
 
 #else
     /* init the raw socket to recv packets */
-    if ((fd = tc_raw_socket_in_init(COPY_FROM_IP_LAYER)) == TC_INVALID_SOCK) {
+#if (TC_WINDOWS)
+    fd = tc_raw_socket_in_init(COPY_FROM_IP_LAYER, clt_settings.transfer.map[0]->online_ip);
+#else
+    fd = tc_raw_socket_in_init(COPY_FROM_IP_LAYER);
+#endif
+
+    if (fd == TC_INVALID_SOCK) {
         return TC_ERR;
     }
     tc_socket_set_nonblocking(fd);
@@ -223,17 +229,27 @@ proc_raw_pack(tc_event_t *rev)
 
     for ( ;; ) {
 
-        recv_len = recvfrom(rev->fd, packet, IP_RCV_BUF_SIZE, 0, NULL, NULL);
+        //recv_len = recvfrom(rev->fd, packet, IP_RCV_BUF_SIZE, 0, NULL, NULL);
+        recv_len = recv(rev->fd, packet, IP_RCV_BUF_SIZE, 0);
+#if (TC_WINDOWS)
+        if (recv_len == -1) {
+            if (WSAGetLastError() == WSAEWOULDBLOCK) {
+                return TC_OK;
+            }
 
+            tc_log_info(LOG_ERR, errno, "recv -1, last error %d", WSAGetLastError());
+            return TC_ERR;
+        }
+#else
         if (recv_len == -1) {
             if (errno == EAGAIN) {
                 return TC_OK;
             }
 
-            tc_log_info(LOG_ERR, errno, "recvfrom");
+            tc_log_info(LOG_ERR, errno, "recv error %d", errno);
             return TC_ERR;
         }
-
+#endif
         if (recv_len == 0) {
             tc_log_info(LOG_ERR, 0, "recv len is 0");
             return TC_ERR;
@@ -356,6 +372,15 @@ dispose_packet(unsigned char *packet, int ip_rcv_len, int *p_valid_flag)
     }
 
     ip   = (tc_iph_t *) packet;
+
+/*
+    int x = 0;
+    for (x = 0; x < 20; x++)
+    {
+        printf("0x%x ", packet[x]);
+    }
+    printf("\n");
+*/
     if (tc_check_ingress_pack_needed(ip)) {
 
         replica_num = clt_settings.replica_num;

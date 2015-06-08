@@ -21,10 +21,12 @@
 #include <stdint.h>
 #include <getopt.h>
 
-#if (MINGW32)
+#if (TC_WINDOWS)
 #include <windows.h>
 #include <winsock2.h>
 #include "netinet.h"
+#include "Mstcpip.h"
+#include <ws2tcpip.h>
 #else
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -35,7 +37,7 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#endif // MINGW32
+#endif 
 
 #if (TC_UDP)
 #include <netinet/udp.h>

@@ -1,7 +1,7 @@
 
 #include <xcopy.h>
 
-#if (MINGW32)
+#if (TC_WINDOWS && TC_PCAP)
 /* it is strange this function no implemented in wpcap.lib*/
 
 const char *
@@ -162,7 +162,7 @@ tc_pcap_socket_in_init(pcap_t **pd, char *device,
 
     pcap_freecode(&fp);
 
-#if (!MINGW32)
+#if (!TC_WINDOWS)
     if (pcap_get_selectable_fd(*pd) == -1) {
         tc_log_info(LOG_ERR, 0, "pcap_get_selectable_fd fails");
         return TC_INVALID_SOCK;
@@ -173,9 +173,11 @@ tc_pcap_socket_in_init(pcap_t **pd, char *device,
         tc_log_info(LOG_ERR, 0, "pcap_setnonblock failed: %s", ebuf);
         return TC_INVALID_SOCK;
     }
-#if (!MINGW32)
+#if (!TC_WINDOWS)
     fd = pcap_get_selectable_fd(*pd);
 #else
+    //TODO: this does not work.
+    //A pcap device can not be treated as a socket, hence can not add it in select() mode
     static int pseudofd = 0;
     fd = (++pseudofd) % MAX_FD_NUM;
 #endif
@@ -185,22 +187,27 @@ tc_pcap_socket_in_init(pcap_t **pd, char *device,
 
 #endif
 
+#if (TC_WINDOWS)
+int
+tc_raw_socket_in_init(int type, uint32_t online_ip)
+#else
 int
 tc_raw_socket_in_init(int type)
+#endif
 {
     int        fd, recv_buf_opt, ret;
     socklen_t  opt_len;
 
     if (type == COPY_FROM_LINK_LAYER) {
         /* copy ip datagram from Link layer */
-        //fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_IP)); //not support to copy from link layer via raw socket.
-        fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+        //fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_IP));
+        fd = socket(AF_INET, SOCK_RAW, IPPROTO_IP);
     } else {
         /* copy ip datagram from IP layer */
 #if (TC_UDP)
         fd = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 #else
-        fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+        fd = socket(AF_INET, SOCK_RAW, IPPROTO_IP);  //IPPROTO_TCP?
 #endif
     }
 
@@ -214,10 +221,29 @@ tc_raw_socket_in_init(int type)
 
     ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &recv_buf_opt, opt_len);
     if (ret == -1) {
-        tc_log_info(LOG_ERR, errno, "Set raw socket(%d)'s recv buffer failed");
+        tc_log_info(LOG_ERR, errno, "Set raw socket(%d)'s recv buffer failed", fd);
         return TC_INVALID_SOCK;
     }
 
+#if (TC_WINDOWS)
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(0);
+    //addr.sin_addr.s_addr = online_ip;
+    addr.sin_addr.s_addr = inet_addr("172.16.163.57");
+
+    if (bind(fd, (PSOCKADDR)&addr, sizeof(addr)) == -1){
+        tc_log_info(LOG_ERR, errno, "bind host ip/port for raw socket(%d) failed", fd);
+        return TC_INVALID_SOCK;
+    }
+
+    // enable SIO_RCVALL
+    u_long iMode = 1;
+    if (ioctlsocket(fd, SIO_RCVALL, &iMode) == -1){
+        tc_log_info(LOG_ERR, errno, "enable SIO_RCVALL for raw socket(%d) failed", fd);
+        return TC_INVALID_SOCK;
+    }
+#endif
     return fd;
 }
 
@@ -239,18 +265,16 @@ tc_raw_socket_out_init(void)
         return TC_INVALID_SOCK;
     }
 
-#if (!MINGW32)
     /*
      * tell the IP layer not to prepend its own header.
      * It does not need setting for linux, but *BSD needs
-     * It also not needed for ipv4 on windows
      */
+     int n = 1;
     if (setsockopt(fd, IPPROTO_IP, IP_HDRINCL, &n, sizeof(n)) < 0) {
         tc_log_info(LOG_ERR, errno,
                     "Set raw socket(%d) option \"IP_HDRINCL\" failed", fd);
         return TC_INVALID_SOCK;
     }
-#endif
 
     return fd;
 }
@@ -285,7 +309,7 @@ tc_pcap_snd(unsigned char *frame, size_t len)
 
     pcap_errbuf[0]='\0';
 
-#if (MINGW32)
+#if (TC_WINDOWS)
     send_len = pcap_sendpacket(pcap, frame, len);
 #else
     send_len = pcap_inject(pcap, frame, len);
@@ -386,7 +410,7 @@ tc_socket_init(void)
 int
 tc_socket_set_nonblocking(int fd)
 {
-#if (MINGW32)
+#if (TC_WINDOWS)
     u_long iMode = 1;  //non-blocking mode is enabled.
     if (ioctlsocket(fd, FIONBIO, &iMode) != NO_ERROR){
         return TC_ERR;

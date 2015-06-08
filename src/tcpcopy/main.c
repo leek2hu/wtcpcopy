@@ -539,6 +539,13 @@ parse_target(transfer_map_t *ip_port, char *addr)
         tc_log_info(LOG_WARN, 0, "target host is 127.0.0.1");
     }
 
+#if (TC_WINDOWS)
+    if (ip_port->online_ip == 0){
+        tc_log_info(LOG_ERR, 0, "online machine ip must provided");
+        return -1;
+    }
+#endif
+
 #if (TC_PCAP)
     if (clt_settings.user_filter == NULL && ip_port->online_ip == 0) {
         if (ip_port->online_port == ip_port->target_port)
@@ -857,7 +864,7 @@ set_details()
     /* generate a random port number for avoiding port conflicts */
     gettimeofday(&tp, NULL);\
     seed = tp.tv_usec;
-#if (MINGW32)
+#if (TC_WINDOWS)
     srand(seed);
     rand_port = (int) ((rand() / (RAND_MAX + 1.0)) * 512);
 #else
@@ -1121,9 +1128,9 @@ main(int argc, char **argv)
     }
 #endif
 
-#if (MINGW32)
+#if (TC_WINDOWS)
     WSADATA wsadata;
-    if(WSAStartup(MAKEWORD(2,2),&wsadata)==SOCKET_ERROR)
+    if(WSAStartup(MAKEWORD(2,2),&wsadata) == SOCKET_ERROR)
     {
         tc_log_info(LOG_ERR, 0, "WSAStartup failed");
         return -1;
@@ -1153,7 +1160,7 @@ main(int argc, char **argv)
 
     tcp_copy_release_resources();
 
-#if (MINGW32)
+#if (TC_WINDOWS)
     tc_log_info(LOG_INFO, 0, "WSACleanup");
     WSACleanup();
 #endif

@@ -6,7 +6,7 @@ export LC_ALL
 . auto/options
 . auto/init
 . auto/sources
-
+        
 test -d $TC_OBJS || mkdir $TC_OBJS
 
 echo > $TC_AUTO_HEADERS_H
@@ -30,18 +30,11 @@ else
     TC_SYSTEM=$TC_PLATFORM
 fi
 
+echo "platform is "$TC_PLATFORM
 
-case "$TC_PLATFORM" in
-
-    Linux:*)
-    . auto/os/linux
-    ;;  
-
-    *) 
-    echo "error: Linux only!"
-    exit 1
-esac
-
+if [ $TC_WINDOWS = YES ]; then
+    have=TC_WINDOWS . auto/have
+fi
 
 if [ $TC_DEBUG = YES ]; then
     have=TC_DEBUG . auto/have
@@ -71,14 +64,22 @@ if [ $TC_PCAP_SEND = YES ]; then
     have=TC_PCAP_SND . auto/have
 fi
 
+if [ $TC_WINDOWS = YES ]; then
+     CORE_LIBS="$CORE_LIBS -lws2_32"
+fi
+
 if [ $TC_PCAP_NEEDED = YES ]; then
     if [ $TC_PF_RING_DIR != NONE ]; then
         have=TC_HAVE_PF_RING . auto/have
         CORE_LIBS="$CORE_LIBS $TC_PF_RING_DIR/userland/libpcap/libpcap.a"
         CORE_LIBS="$CORE_LIBS $TC_PF_RING_DIR/userland/lib/libpfring.a"
         CORE_LIBS="$CORE_LIBS -lrt -lpthread -lnuma"
-    else
-        CORE_LIBS="$CORE_LIBS -lpcap" 
+    else 
+        if [ $TC_WINDOWS != YES ]; then      
+            CORE_LIBS="$CORE_LIBS -lpcap" 
+        else
+            CORE_LIBS="$CORE_LIBS -lpacket  -lwpcap"
+        fi
     fi
 fi
 
@@ -105,7 +106,9 @@ fi
 . auto/cc/conf
 . auto/headers
 . auto/os/conf
-. auto/linux
+if [ $TC_WINDOWS != YES ]; then
+    . auto/linux
+fi
 . auto/modules
 
 
@@ -119,10 +122,19 @@ if [ $TC_DIGEST = YES ]; then
     CORE_LIBS="$CORE_LIBS -lcrypto -lm" 
 fi
 
+
 case ".$TC_PREFIX" in
     .)
-        TC_PREFIX=${TC_PREFIX:-/usr/local/tcpcopy}
-        have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
+        if [ $TC_WINDOWS != YES ]; then
+            TC_PREFIX=${TC_PREFIX:-/usr/local/tcpcopy}
+            have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
+        elif [ $TC_MINGW = YES ]; then
+            TC_PREFIX=${TC_PREFIX:-/c/tcpcopy}
+            have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
+        else
+            TC_PREFIX=${TC_PREFIX:-c:\\\\tcpcopy}
+            have=TC_PREFIX value="\"$TC_PREFIX\\\\\"" . auto/define
+        fi
     ;;
 
     .!)
@@ -130,12 +142,20 @@ case ".$TC_PREFIX" in
     ;;
 
     *)
-        have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
+        if [ $TC_WINDOWS != YES -o $TC_MINGW = YES ]; then
+            have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
+        else
+            have=TC_PREFIX value="\"$TC_PREFIX\\\\\"" . auto/define
+        fi
     ;;
 esac
 
 if [ ".$TC_CONF_PREFIX" != "." ]; then
-    have=TC_CONF_PREFIX value="\"$TC_CONF_PREFIX/\"" . auto/define
+    if [ $TC_WINDOWS != YES -o $TC_MINGW = YES ]; then
+        have=TC_CONF_PREFIX value="\"$TC_CONF_PREFIX/\"" . auto/define
+    else
+        have=TC_CONF_PREFIX value="\"$TC_CONF_PREFIX\\\\\"" . auto/define
+    fi
 fi
 
 have=TC_SBIN_PATH value="\"$TC_SBIN_PATH\"" . auto/define
