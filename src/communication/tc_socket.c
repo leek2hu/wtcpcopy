@@ -229,8 +229,8 @@ tc_raw_socket_in_init(int type)
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(0);
-    //addr.sin_addr.s_addr = online_ip;
-    addr.sin_addr.s_addr = inet_addr("172.16.163.57");
+    addr.sin_addr.s_addr = online_ip;
+    //addr.sin_addr.s_addr = inet_addr("10.32.27.130");
 
     if (bind(fd, (PSOCKADDR)&addr, sizeof(addr)) == -1){
         tc_log_info(LOG_ERR, errno, "bind host ip/port for raw socket(%d) failed", fd);
