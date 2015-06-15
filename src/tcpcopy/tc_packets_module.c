@@ -17,7 +17,11 @@ static uint64_t timeval_diff(struct timeval *, struct timeval *);
 
 #if (TC_PCAP)
 static  pcap_t  *pcap_map[MAX_FD_NUM];
-static int proc_pcap_pack(tc_event_t *);
+#if (!TC_WINDOWS)
+    static int proc_pcap_pack(tc_event_t *);
+#else
+    static int proc_pcap_pack(tc_event_timer_t *);
+#endif
 #else
 static int proc_raw_pack(tc_event_t *);
 #endif
@@ -40,6 +44,7 @@ device_set(tc_event_loop_t *event_loop, device_t *device)
 
     pcap_map[fd] = device->pcap;
 
+#if (!TC_WINDOWS)
     ev = tc_event_create(event_loop->pool, fd, proc_pcap_pack, NULL);
     if (ev == NULL) {
         return TC_ERR;
@@ -49,6 +54,11 @@ device_set(tc_event_loop_t *event_loop, device_t *device)
         tc_log_info(LOG_ERR, 0, "add socket(%d) to event loop failed.", fd);
         return TC_ERR;
     }
+#else
+    /* register a timer for winpcap device */
+    tc_event_add_timer(event_loop->pool, OFFLINE_ACTIVATE_INTERVAL,
+            device->pcap, proc_pcap_pack);
+#endif
 
     return TC_OK;
 }
@@ -192,6 +202,7 @@ pcap_retrieve(unsigned char *args, const struct pcap_pkthdr *pkt_hdr,
         }
     } else {
         ether = (struct ethernet_hdr *) frame;
+        int x = ntohs(ether->ether_type);
         if (ntohs(ether->ether_type) != ETH_P_IP) {
             return;
         }
@@ -203,7 +214,7 @@ pcap_retrieve(unsigned char *args, const struct pcap_pkthdr *pkt_hdr,
     dispose_packet(ip_data, ip_pack_len, NULL);
 }
 
-
+#if (!TC_WINDOWS)
 static int
 proc_pcap_pack(tc_event_t *rev)
 {
@@ -214,6 +225,19 @@ proc_pcap_pack(tc_event_t *rev)
 
     return TC_OK;
 }
+#else
+proc_pcap_pack(tc_event_timer_t* evt)
+{
+    pcap_t *pcap;
+
+    pcap = (pcap_t *)evt->data;
+    int cnt = pcap_dispatch(pcap, 10, (pcap_handler) pcap_retrieve, (u_char *) pcap);
+
+    tc_event_update_timer(evt, OFFLINE_ACTIVATE_INTERVAL);
+
+    return TC_OK;
+}
+#endif
 
 #else
 

@@ -2074,6 +2074,7 @@ tc_check_ingress_pack_needed(tc_iph_t *ip)
             }
         }
 
+        //fill fake ip addr in packet
         if (clt_settings.clt_tf_ip_num > 0) {
             tf_key = get_ip_key(ip->saddr);
             ip->saddr = get_tf_ip(tf_key);

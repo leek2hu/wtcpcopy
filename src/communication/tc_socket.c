@@ -2,7 +2,7 @@
 #include <xcopy.h>
 
 #if (TC_WINDOWS && TC_PCAP)
-/* it is strange this function no implemented in wpcap.lib*/
+/* it is strange this function not implemented in wpcap.lib*/
 
 const char *
 pcap_statustostr(int errnum)
@@ -118,7 +118,6 @@ tc_pcap_open(pcap_t **pd, char *device, int snap_len, int buf_size)
     return TC_OK;
 }
 
-
 int
 tc_pcap_socket_in_init(pcap_t **pd, char *device,
         int snap_len, int buf_size, char *pcap_filter)
@@ -152,14 +151,14 @@ tc_pcap_socket_in_init(pcap_t **pd, char *device,
                 pcap_filter, pcap_geterr(*pd));
         return TC_INVALID_SOCK;
     }
-
+/*
     if (pcap_setfilter(*pd, &fp) == -1) {
         tc_log_info(LOG_ERR, 0, "couldn't install filter %s: %s",
                 pcap_filter, pcap_geterr(*pd));
         pcap_freecode(&fp);
         return TC_INVALID_SOCK;
     }
-
+*/
     pcap_freecode(&fp);
 
 #if (!TC_WINDOWS)
@@ -176,9 +175,8 @@ tc_pcap_socket_in_init(pcap_t **pd, char *device,
 #if (!TC_WINDOWS)
     fd = pcap_get_selectable_fd(*pd);
 #else
-    //TODO: this does not work.
-    //A pcap device can not be treated as a socket, hence can not add it in select() mode
-    static int pseudofd = 0;
+    //A pcap device can not be treated as a socket, hence it can not be added into select() mode
+    static int pseudofd = 1000;
     fd = (++pseudofd) % MAX_FD_NUM;
 #endif
 

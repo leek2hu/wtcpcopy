@@ -31,7 +31,6 @@ TC_DETECT_MEMORY=NO
 TC_PCAP_NEEDED=NO
 
 TC_WINDOWS=NO
-TC_MINGW=NO
 
 TC_CC_OPT=
 TC_LD_OPT=
@@ -81,7 +80,6 @@ do
         --with-pfring=*)                 TC_PF_RING_DIR="$value"   ;;
         --with-detect-memory)            TC_DETECT_MEMORY=YES      ;;
         --windows)                       TC_WINDOWS=YES            ;;
-        --mingw)                         TC_WINDOWS=YES  TC_MINGW=YES ;;
 
         *)
             echo "$0: error: invalid option \"$option\""
@@ -125,8 +123,7 @@ cat << END
   --dnat                             support dnat
   --disable-combined                 disable combined response mode        
   --udp                              udpcopy
-  --windows                          works on windows platform, and aim to build it via IDE e.g. code::bloack, visual studio...
-  --mingw                            works on windows platform, and aim to build & install it via mingw shell.
+  --windows                          works on windows platform
 
 END
 
@@ -134,7 +131,7 @@ END
 fi
 
 
-if [ $TC_WINDOWS = YES -a $TC_MINGW = NO ]; then
+if [ $TC_WINDOWS = YES ]; then
   TC_CONF_PATH=${TC_CONF_PATH:-conf\\\\plugin.conf}
   TC_CONF_PREFIX=`dirname $TC_CONF_PATH`
   TC_PID_PATH=${TC_PID_PATH:-logs\\\\tcpcopy.pid}

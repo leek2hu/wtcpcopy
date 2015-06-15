@@ -128,9 +128,6 @@ case ".$TC_PREFIX" in
         if [ $TC_WINDOWS != YES ]; then
             TC_PREFIX=${TC_PREFIX:-/usr/local/tcpcopy}
             have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
-        elif [ $TC_MINGW = YES ]; then
-            TC_PREFIX=${TC_PREFIX:-/c/tcpcopy}
-            have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
         else
             TC_PREFIX=${TC_PREFIX:-c:\\\\tcpcopy}
             have=TC_PREFIX value="\"$TC_PREFIX\\\\\"" . auto/define
@@ -142,7 +139,7 @@ case ".$TC_PREFIX" in
     ;;
 
     *)
-        if [ $TC_WINDOWS != YES -o $TC_MINGW = YES ]; then
+        if [ $TC_WINDOWS != YES ]; then
             have=TC_PREFIX value="\"$TC_PREFIX/\"" . auto/define
         else
             have=TC_PREFIX value="\"$TC_PREFIX\\\\\"" . auto/define
@@ -151,7 +148,7 @@ case ".$TC_PREFIX" in
 esac
 
 if [ ".$TC_CONF_PREFIX" != "." ]; then
-    if [ $TC_WINDOWS != YES -o $TC_MINGW = YES ]; then
+    if [ $TC_WINDOWS != YES ]; then
         have=TC_CONF_PREFIX value="\"$TC_CONF_PREFIX/\"" . auto/define
     else
         have=TC_CONF_PREFIX value="\"$TC_CONF_PREFIX\\\\\"" . auto/define

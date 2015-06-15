@@ -40,8 +40,7 @@ Two quick start options are available for *tcpcopy*:
     --pcap-capture              capture packets at the data link
     --pcap-send                 send packets at the data link layer instead of the IP layer
     --with-pfring=PATH          set path to PF_RING library sources		
-	--mingw                     run on windows system, and use mingw to build the application.
-	--windows 		            run on windows system, and will use IDE e.g. code::blocks or visual studio to build the application.
+	--windows 		            works on windows system. This is mandatory option for wtcpcopy
     --set-protocol-module=PATH  set tcpcopy to work for an external protocol module
     --single                    if intercept and tcpcopy are both configured with "--single" option, 
                                 only one tcpcopy works together with intercept, 
@@ -51,7 +50,7 @@ Two quick start options are available for *tcpcopy*:
 
    
 ##Running TCPCopy
-Assume *wtcpcopy* is configured with "./configure --mingw --with-cc=gcc".
+Assume *wtcpcopy* is configured with "./configure --windows --with-cc=gcc".
  
 ###1) On the online source server (administartor privilege is required):
       

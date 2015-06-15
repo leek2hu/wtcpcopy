@@ -2,8 +2,6 @@
 # Copyright (C) bin wang
 # Copyright (C) NetEase, Inc.
 
-
-echo "haha"
 echo $tc_n "checking for $tc_include ...$tc_c"
 
 cat << END >> $TC_AUTOCONF_ERR
