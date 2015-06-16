@@ -37,7 +37,7 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#endif 
+#endif
 
 #if (TC_UDP)
 #include <netinet/udp.h>
@@ -127,6 +127,7 @@ typedef struct tc_sess_s        tc_sess_t;
 
 #define CHECK_INTERVAL  5
 #define OFFLINE_ACTIVATE_INTERVAL  10
+#define WINPCAP_CAPTURE_INTERVAL   5
 #define DEFAULT_SESS_TIMEOUT 120
 #define OFFLINE_TAIL_TIMEOUT 120
 
@@ -290,12 +291,17 @@ enum packet_classification{
  *  Ethernet II header
  *  static header size: 14 bytes
  */
+#if (TC_WINDOWS)  //ensure no trouble of address alignment
+#pragma pack(1)
+#endif
 struct ethernet_hdr {
     uint8_t  ether_dhost[ETHER_ADDR_LEN];
     uint8_t  ether_shost[ETHER_ADDR_LEN];
     uint16_t ether_type;
 };
-
+#if (TC_WINDOWS)
+#pragma pack ()
+#endif
 
 #if (TC_PCAP)
 typedef struct device_s{

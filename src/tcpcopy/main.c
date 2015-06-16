@@ -1030,9 +1030,8 @@ set_details()
         return -1;
     }
 
-
+#if (!TC_WINDOWS)
     if (clt_settings.do_daemonize) {
-        /* ignore
         if (sigignore(SIGHUP) == -1) {
             tc_log_info(LOG_ERR, errno, "Failed to ignore SIGHUP");
         }
@@ -1040,8 +1039,8 @@ set_details()
             fprintf(stderr, "failed to daemonize() in order to daemonize\n");
             return -1;
         }
-        */
     }
+#endif
 
     return 0;
 }

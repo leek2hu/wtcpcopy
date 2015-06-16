@@ -29,7 +29,7 @@ Two quick start options are available for *tcpcopy*:
 2. Set winpcap path if pacap related features will be selelcted. $winpcap_home is the directory where winpcap is installed.  
 	`export C_INCLUDE_PATH=$winpcap_home/Include/`  
 	`export LIBRARY_PATH=$winpcap_home/Lib`  
-3. `./configure --mingw --with-cc=gcc`
+3. `./configure --windows --with-cc=gcc`
 	- choose appropriate configure options if needed
 4. `make`
 5. `make install`

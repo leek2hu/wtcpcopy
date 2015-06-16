@@ -56,7 +56,7 @@ device_set(tc_event_loop_t *event_loop, device_t *device)
     }
 #else
     /* register a timer for winpcap device */
-    tc_event_add_timer(event_loop->pool, OFFLINE_ACTIVATE_INTERVAL,
+    tc_event_add_timer(event_loop->pool, WINPCAP_CAPTURE_INTERVAL,
             device->pcap, proc_pcap_pack);
 #endif
 
@@ -202,7 +202,6 @@ pcap_retrieve(unsigned char *args, const struct pcap_pkthdr *pkt_hdr,
         }
     } else {
         ether = (struct ethernet_hdr *) frame;
-        int x = ntohs(ether->ether_type);
         if (ntohs(ether->ether_type) != ETH_P_IP) {
             return;
         }
@@ -233,7 +232,7 @@ proc_pcap_pack(tc_event_timer_t* evt)
     pcap = (pcap_t *)evt->data;
     int cnt = pcap_dispatch(pcap, 10, (pcap_handler) pcap_retrieve, (u_char *) pcap);
 
-    tc_event_update_timer(evt, OFFLINE_ACTIVATE_INTERVAL);
+    tc_event_update_timer(evt, WINPCAP_CAPTURE_INTERVAL);
 
     return TC_OK;
 }
