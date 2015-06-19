@@ -396,14 +396,6 @@ dispose_packet(unsigned char *packet, int ip_rcv_len, int *p_valid_flag)
 
     ip   = (tc_iph_t *) packet;
 
-/*
-    int x = 0;
-    for (x = 0; x < 20; x++)
-    {
-        printf("0x%x ", packet[x]);
-    }
-    printf("\n");
-*/
     if (tc_check_ingress_pack_needed(ip)) {
 
         replica_num = clt_settings.replica_num;

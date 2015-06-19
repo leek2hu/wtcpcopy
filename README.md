@@ -20,19 +20,20 @@ Two quick start options are available for *tcpcopy*:
 * [Download the latest tcpcopy release](https://github.com/leek2hu/wtcpcopy/releases).
 * Clone the repo: `git clone git://github.com/leek2hu/wtcpcopy.git`.
 
-#Precondition
+##Precondition
 1. It need to install mingw enviorment.
 2. It need to install winpcap in advance if winpcap related features are selected for capturing /sending packets.
 
-##Getting tcpcopy installed on the online server
-1. `cd tcpcopy`
-2. Set winpcap path if pacap related features will be selelcted. $winpcap_home is the directory where winpcap is installed.  
+##Getting wtcpcopy installed on the online server
+1. run `$ming_hoome\msys\1.0\msys.bat` to open mingw shell
+2. `cd wtcpcopy`
+3. Set winpcap path if pacap related features will be selelcted. $winpcap_home is the directory where winpcap is installed.  
 	`export C_INCLUDE_PATH=$winpcap_home/Include/`  
 	`export LIBRARY_PATH=$winpcap_home/Lib`  
-3. `./configure --windows --with-cc=gcc`
+4. `./configure --windows --with-cc=gcc`
 	- choose appropriate configure options if needed
-4. `make`
-5. `make install`
+5. `make`
+6. `make install`
 
 
 ###Configure Options for tcpcopy

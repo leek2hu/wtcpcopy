@@ -151,14 +151,14 @@ tc_pcap_socket_in_init(pcap_t **pd, char *device,
                 pcap_filter, pcap_geterr(*pd));
         return TC_INVALID_SOCK;
     }
-/* TODO: temp commented
+
     if (pcap_setfilter(*pd, &fp) == -1) {
         tc_log_info(LOG_ERR, 0, "couldn't install filter %s: %s",
                 pcap_filter, pcap_geterr(*pd));
         pcap_freecode(&fp);
         return TC_INVALID_SOCK;
     }
-*/
+
     pcap_freecode(&fp);
 
 #if (!TC_WINDOWS)
