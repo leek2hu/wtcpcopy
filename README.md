@@ -22,12 +22,12 @@ Two quick start options are available for *tcpcopy*:
 
 ##Precondition
 1. It need to install mingw enviorment.
-2. It need to install winpcap in advance if winpcap related features are selected for capturing /sending packets.
+2. It need to install winpcap and winpcap dev packs in advance if winpcap related features are selected for capturing /sending packets.
 
 ##Getting wtcpcopy installed on the online server
 1. run `$mingw_home\msys\1.0\msys.bat` to open mingw shell
 2. `cd wtcpcopy`
-3. Set winpcap path if pacap related features will be selelcted. $winpcap_home is the directory where winpcap is installed.  
+3. Set winpcap path if pacap related features will be selelcted. $winpcap_home is the directory where winpcap developer packs is installed.  
 	`export C_INCLUDE_PATH=$winpcap_home/Include/`  
 	`export LIBRARY_PATH=$winpcap_home/Lib`  
 4. `./configure --windows --with-cc=gcc`
